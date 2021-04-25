@@ -137,21 +137,22 @@ try_moving1(P, P1) :- try_moving(P, P1).
 
 adv19b(P) :- try_moving(2000-3200, P). % start from a guess based on the shape
 % This is not optimal yet, but after visualization it is easy to find the solution manually:
-% ?- display(120).
+% ?- display(1060-1710, 120).
 
 % Visualization
 
-display(N) :- display(N, 0-0).
-display(N, 0-N) :- !.
-display(N, N-Y) :- nl, Y1 is Y + 1, display(N, 0-Y1).
-display(N, X-Y) :-
-    X0 is X + 1060, Y0 is Y + 1710, % add a small margin
-    beam(X0-Y0, B),
+display(N) :- display(0-0, N, 0-0).
+display(P, N) :- display(P, N, 0-0).
+display(_, N, 0-N) :- !.
+display(P, N, N-Y) :- nl, Y1 is Y + 1, display(P, N, 0-Y1).
+display(X0-Y0, N, X-Y) :-
+    X1 is X + X0, Y1 is Y + Y0, % add a small margin
+    beam(X1-Y1, B),
     ( B = 0, write('.')
     ; B = 1, write('#')
     ),
-    X1 is X + 1,
-    display(N, X1-Y), !.
+    X2 is X + 1,
+    display(X0-Y0, N, X2-Y), !.
 
 % Data
 
