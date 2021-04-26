@@ -67,6 +67,140 @@ adv20(X) :-
     portal(zz, _, To),
     shortest_path(From, To, X), !.
 
+% Another preprocessing - finding portal connections
+
+% Comment out the second rule of step/2 when doing this
+find_connections :-
+    portal(A, Qa, Pa),
+    portal(B, Qb, Pb), B \= A,
+    shortest_path(Pa, Pb, N),
+    write('connection('),
+    write(A), write(','),
+    inout(Qa, Ia), write(Ia), write(','),
+    write(B), write(','),
+    inout(Qb, Ib), write(Ib), write(','),
+    write(N), write(').'),
+    nl, fail.
+
+inout(_-2, out).
+inout(_-34, in).
+inout(_-92, in).
+inout(_-124, out).
+inout(2-_, out).
+inout(34-_, in).
+inout(90-_, in).
+inout(122-_, out).
+
+% Shortest connection search
+
+other_side(in, out).
+other_side(out, in).
+
+adjacent1(pos(A,I,L), pos(B,I1,L1), D) :-
+    connection(A, I, B, I0, D),
+    other_side(I0, I1),
+    ( B = zz, L = 0, L1 = 0
+    ; B \= zz, I0 = out, L > 0, L1 is L - 1
+    ; I0 = in, L1 is L + 1
+    ).
+
+shortest_path1(From, To, Length) :-
+    shortest_path1([path(From,0)], To, [path(From,0)], Length).
+
+shortest_path1([path(P,K)|_], P, _, K).
+shortest_path1([path(P,K)|F], T, L, N) :-
+    findall(A-D, adjacent1(P, A, D), As),
+    neighbor_paths1(As, L, K, L1),
+    append(F, L1, F1), append(L1, L, L2),
+    shortest_path1(F1, T, L2, N).
+
+neighbor_paths1([], _, _, []).
+neighbor_paths1([P-D|Ps], L, K, L1) :-
+    member(path(P,K1), L), K + D + 1 >= K1,
+    !, neighbor_paths1(Ps, L, K, L1).
+neighbor_paths1([P-D|Ps], L, K, [path(P,K1)|L1]) :-
+    K1 is K + D + 1,
+    neighbor_paths1(Ps, L, K, L1).
+
+adv20b(X) :-
+    shortest_path1(pos(aa,out,0), pos(zz,in,0), X1),
+    X is X1 - 1, !. % because we also go through the ZZ gate
+
+% Example
+
+% Generated connection data
+
+connection(jg,out,fz,in,64).
+connection(lv,out,og,in,58).
+connection(pm,out,od,in,52).
+connection(pi,out,xl,in,62).
+connection(vo,out,tr,out,4).
+connection(vo,out,nb,in,56).
+connection(vo,out,uy,in,58).
+connection(tr,out,vo,out,4).
+connection(tr,out,nb,in,54).
+connection(tr,out,uy,in,56).
+connection(xc,out,ww,in,80).
+connection(fz,in,jg,out,64).
+connection(og,in,lv,out,58).
+connection(od,in,pm,out,52).
+connection(xl,in,pi,out,62).
+connection(nb,in,vo,out,56).
+connection(nb,in,tr,out,54).
+connection(nb,in,uy,in,4).
+connection(uy,in,vo,out,58).
+connection(uy,in,tr,out,56).
+connection(uy,in,nb,in,4).
+connection(ww,in,xc,out,80).
+connection(vo,in,og,out,56).
+connection(jh,in,ck,out,52).
+connection(yp,in,nb,out,60).
+connection(tr,in,xl,out,40).
+connection(ck,in,fz,out,74).
+connection(br,in,sl,out,58).
+connection(oa,in,ww,out,52).
+connection(og,out,vo,in,56).
+connection(ck,out,jh,in,52).
+connection(nb,out,yp,in,60).
+connection(xl,out,tr,in,40).
+connection(fz,out,ck,in,74).
+connection(sl,out,br,in,58).
+connection(ww,out,oa,in,52).
+connection(pl,out,el,in,48).
+connection(yp,out,th,in,46).
+connection(ev,out,xc,in,68).
+connection(wv,out,aa,out,14).
+connection(wv,out,pi,in,56).
+connection(aa,out,wv,out,14).
+connection(aa,out,pi,in,44).
+connection(el,out,wv,in,78).
+connection(uy,out,xp,in,62).
+connection(zz,out,jh,out,8).
+connection(zz,out,ev,in,72).
+connection(jh,out,zz,out,8).
+connection(jh,out,ev,in,78).
+connection(el,in,pl,out,48).
+connection(th,in,yp,out,46).
+connection(xc,in,ev,out,68).
+connection(pi,in,wv,out,56).
+connection(pi,in,aa,out,44).
+connection(wv,in,el,out,78).
+connection(xp,in,uy,out,62).
+connection(ev,in,zz,out,72).
+connection(ev,in,jh,out,78).
+connection(pm,in,br,out,64).
+connection(lv,in,un,out,62).
+connection(un,in,od,out,58).
+connection(sl,in,oa,out,44).
+connection(pl,in,xp,out,74).
+connection(jg,in,th,out,56).
+connection(br,out,pm,in,64).
+connection(un,out,lv,in,62).
+connection(od,out,un,in,58).
+connection(oa,out,sl,in,44).
+connection(xp,out,pl,in,74).
+connection(th,out,jg,in,56).
+
 % Generated portal data
 
 portal(jg,42-2,42-3).
